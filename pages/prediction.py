@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from celery.result import AsyncResult
 from utils.upload_to_fds import upload
 from utils.utills import make_celery
@@ -13,6 +14,8 @@ celery = make_celery()
 
 def clear_state():
     if 'task_id' in st.session_state:
+        if st.session_state['task_id'] is not None:
+            celery.control.revoke(st.session_state['task_id'], terminate=True)
         del st.session_state['task_id']
     if 'async_result' in st.session_state:
         del st.session_state['async_result']
@@ -30,16 +33,17 @@ def form_upload():
                 return
             clear_state()
             st.write("Супер! Отправляю в космос....")
-            # images_url = upload(images_archive)
-            # model_url = upload(model_archive)
-            images_url = "https://fds.es.nsu.ru/uploads/20a8e2e0-5eac-4acc-b880-85f5565e7805"
-            model_url = "https://fds.es.nsu.ru/uploads/69d1abe5-8b04-45a5-8d59-32283ec9b101"
+            images_url = upload(images_archive)
+            model_url = upload(model_archive)
+            # images_url = "https://fds.es.nsu.ru/uploads/20a8e2e0-5eac-4acc-b880-85f5565e7805"
+            # model_url = "https://fds.es.nsu.ru/uploads/69d1abe5-8b04-45a5-8d59-32283ec9b101"
             st.write("Ваши файлы загружены")
             st.write(f"Model: {model_url}")
             st.write(f"Images: {images_url}")
             task = predict_by_model.apply_async(args=(images_url, model_url))
             st.write(f"Task id: {task.task_id}")
             return task.task_id
+            
 if 'task_id' not in st.session_state:
     task_id = form_upload()
     if task_id is not None:
@@ -62,7 +66,10 @@ if task_id is not None:
             res = st.session_state['async_result']
             st.text(f"Статус задачи {res.task_id}: {res.status}")
             if res.status == "SUCCESS":
-                st.text(f"Result: {res.get()}")
+                result = res.get()
+                st.text(f"Results:")
+                df = pd.DataFrame(result.items(), columns=["Имя файла", "Класс"]).sort_values(by="Имя файла").reset_index(drop=True)
+                st.dataframe(df)
             elif res.status == "FAILURE":
                 st.button("Перезапустить", on_click=get_results)
                 st.error(f"Error: {res.get()}")

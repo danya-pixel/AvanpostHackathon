@@ -83,7 +83,7 @@ def get_all_files(data_dir):
                 r = Path(r)
                 filepath = r/name
                 label = filepath.parents[0].name
-                data_paths.append(filepath)
+                data_paths.append(str(filepath.resolve()))
                 data_labels.append(label)
     return data_paths, data_labels
 

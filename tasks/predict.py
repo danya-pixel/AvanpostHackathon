@@ -42,15 +42,14 @@ def predict_by_model(self, images_url, models_url):
         model_config = json.load(f)
     classes = model_config['classes']
     model_name = model_config['model_name']
-    print(classes, )
     result = predict_samples(classes_names=classes,
-                    pth_path=(task_folder / "model" / model_name).resolve(),
-                    new_data_dir=(task_folder / "images").resolve()
+                    pth_path=str((task_folder / "model" / model_name).resolve()),
+                    new_data_dir=str((task_folder / "images").resolve())
                     )
-    
-    # TODO: uncomment it
-    # shutil.rmtree(task_folder)
-    return result
+    output_result = {}
+    for path, class_idx in result.items():
+        output_result[Path(path).name] = classes[class_idx]
 
-if __name__ == "__main__":
-    from ml.finetuner import predict_samples
+    shutil.rmtree(task_folder)
+    return output_result
+
