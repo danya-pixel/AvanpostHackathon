@@ -2,17 +2,17 @@ import time
 import copy 
 import torch
 
-def train_model_default(model, device, dataloaders, criterion, optimizer, scheduler, num_epochs=10):
+def train_model_default(meta, model, device, dataloaders, criterion, optimizer, scheduler, num_epochs=10, model_path='model.pth'):
     since = time.time()
 
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
-
+    meta['epoch_loss'] = []
+    meta['epoch_acc'] = []
     for epoch in range(num_epochs):
         print(f'Epoch {epoch}/{num_epochs - 1}')
         print('-' * 10)
 
-        # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
                 model.train()  # Set model to training mode
@@ -51,6 +51,9 @@ def train_model_default(model, device, dataloaders, criterion, optimizer, schedu
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
 
+            meta['epoch_loss'].append(epoch_loss)
+            meta['epoch_acc'].append(float(epoch_acc.detach().cpu()))
+
             print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
 
             # deep copy the model
@@ -65,32 +68,5 @@ def train_model_default(model, device, dataloaders, criterion, optimizer, schedu
 
     # load best model weights
     model.load_state_dict(best_model_wts)
-    torch.save(model.state_dict(), "model_fine.pth")
+    torch.save(model.state_dict(), model_path)
     return model
-
-
-def visualize_model(model, num_images=6):
-    was_training = model.training
-    model.eval()
-    images_so_far = 0
-    fig = plt.figure()
-
-    with torch.no_grad():
-        for i, (inputs, labels) in enumerate(dataloaders['val']):
-            inputs = inputs.to(device)
-            labels = labels.to(device)
-
-            outputs = model(inputs)
-            _, preds = torch.max(outputs, 1)
-
-            for j in range(inputs.size()[0]):
-                images_so_far += 1
-                ax = plt.subplot(num_images//2, 2, images_so_far)
-                ax.axis('off')
-                ax.set_title(f'predicted: {class_names[preds[j]]}')
-                imshow(inputs.cpu().data[j])
-
-                if images_so_far == num_images:
-                    model.train(mode=was_training)
-                    return
-        model.train(mode=was_training)

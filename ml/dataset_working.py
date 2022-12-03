@@ -83,7 +83,7 @@ def get_all_files(data_dir):
                 r = Path(r)
                 filepath = r/name
                 label = filepath.parents[0].name
-                data_paths.append(filepath)
+                data_paths.append(str(filepath.resolve()))
                 data_labels.append(label)
     return data_paths, data_labels
 
@@ -101,7 +101,7 @@ def get_dataloader_pred(data_dir):
     new_lables = 0 * len(new_files)
     init_dataframe = pd.DataFrame({'x': new_files, 'y': new_lables})
     dataset_pred = ImageNetDatasetPred(init_dataframe, transform=input_transform)
-    dataloader_pred = torch.utils.data.DataLoader(dataset_pred, batch_size=64, shuffle=True, num_workers=4)
+    dataloader_pred = torch.utils.data.DataLoader(dataset_pred, batch_size=64, shuffle=True, num_workers=1)
     return dataloader_pred
 
 def get_dataloaders(data_dir, classes, new_data_dir, new_data_name):
