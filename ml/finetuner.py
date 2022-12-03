@@ -1,10 +1,10 @@
 import json
-from dataset_working import get_dataloaders, get_dataloader_pred
 import torch
-from torch import nn
-from train import train_model_default
 import torchvision
 import numpy as np
+from torch import nn
+from ml.dataset_working import get_dataloaders, get_dataloader_pred
+from ml.train import train_model_default
 
 
 def get_classes_dict(classes_names):

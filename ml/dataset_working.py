@@ -85,7 +85,7 @@ def get_dataloader_pred(data_dir):
     new_lables = 0 * len(new_files)
     init_dataframe = pd.DataFrame({'x': new_files, 'y': new_lables})
     dataset_pred = ImageNetDatasetPred(init_dataframe, transform=input_transform)
-    dataloader_pred = torch.utils.data.DataLoader(dataset_pred, batch_size=64, shuffle=True, num_workers=4)
+    dataloader_pred = torch.utils.data.DataLoader(dataset_pred, batch_size=64, shuffle=True, num_workers=0)
     return dataloader_pred
 
 def get_dataloaders(data_dir, classes, new_data_dir, new_data_name):
@@ -118,7 +118,7 @@ def get_dataloaders(data_dir, classes, new_data_dir, new_data_name):
     image_datasets = {'train':dataset_train, 'val':dataset_val, 'test':dataset_test} #тут надо вставить датасеты
 
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=64,
-                                                shuffle=True, num_workers=4)
+                                                shuffle=True, num_workers=0)
                 for x in ['train', 'val', 'test']}
     
     return dataloaders

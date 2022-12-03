@@ -6,3 +6,5 @@ numpy
 requests
 celery
 Redis
+torchvision
+scikit-learn

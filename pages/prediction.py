@@ -1,7 +1,7 @@
 import streamlit as st
 from celery.result import AsyncResult
 from utils.upload_to_fds import upload
-from utils import make_celery
+from utils.utills import make_celery
 from tasks.predict import predict_by_model
 
 st.title("Prediction")
@@ -30,8 +30,10 @@ def form_upload():
                 return
             clear_state()
             st.write("Супер! Отправляю в космос....")
-            images_url = upload(images_archive)
-            model_url = upload(model_archive)
+            # images_url = upload(images_archive)
+            # model_url = upload(model_archive)
+            images_url = "https://fds.es.nsu.ru/uploads/20a8e2e0-5eac-4acc-b880-85f5565e7805"
+            model_url = "https://fds.es.nsu.ru/uploads/69d1abe5-8b04-45a5-8d59-32283ec9b101"
             st.write("Ваши файлы загружены")
             st.write(f"Model: {model_url}")
             st.write(f"Images: {images_url}")
