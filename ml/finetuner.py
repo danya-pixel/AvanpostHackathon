@@ -34,7 +34,7 @@ def finetune_model(data_dir, classes_names, pth_path, new_data_dir, new_data_nam
     for name, param in model_ft.named_parameters():
         if not 'fc' in name:
             param.requires_grad = False
-    model_ft = train_model_default(meta, model_ft, device, dataloaders, criterion, optimizer_ft, exp_lr_scheduler, num_epochs= 1, model_path=meta['pth_path'])
+    model_ft = train_model_default(meta, model_ft, device, dataloaders, criterion, optimizer_ft, exp_lr_scheduler, num_epochs= 10, model_path=meta['pth_path'])
     acc, f1 = test_model(model_ft, dataloaders['test'], device)
     meta['acc'], meta['f1'] = float(acc), float(f1)
     return meta
