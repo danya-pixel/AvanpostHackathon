@@ -50,7 +50,7 @@ if 'task_id' not in st.session_state:
         st.session_state['task_id'] = task_id
 else:
     task_id = st.session_state['task_id']
-#7A1fEOQrP2b4G147uo3Y8QCMJdlKZY7Q
+
 def get_results():
     task_id = st.session_state['task_id']
     async_result = AsyncResult(id=task_id, app=celery)
