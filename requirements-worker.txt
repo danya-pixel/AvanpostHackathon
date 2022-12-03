@@ -3,3 +3,6 @@ Pillow
 opencv-python
 pandas
 numpy
+requests
+celery
+Redis
