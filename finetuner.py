@@ -23,10 +23,8 @@ def finetune_model(classes_names, pth_path, new_data_dir, new_data_name):
     class_names = {v: k for k, v in classes.items()}
 
     dataloaders = get_dataloaders(data_dir, classes, new_data_dir, new_data_name)
-    print(f"Размер трейн даталоадера: {len(dataloaders['train'])}")
     model_ft = torchvision.models.resnet18()
     model_ft.load_state_dict(torch.load(pth_path))
-    print('Модель загружена')
     num_ftrs = model_ft.fc.in_features
     model_ft.fc = nn.Linear(num_ftrs, len(classes_names))
 
@@ -39,26 +37,24 @@ def finetune_model(classes_names, pth_path, new_data_dir, new_data_name):
 
     model_ft = train_model_default(model_ft, device, dataloaders, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
 
+def load_model(classes_names, pth_path, device):
+    np.random.seed(42)
+    torch.seed()
 
+    model_ft = torchvision.models.resnet18()
+    num_ftrs = model_ft.fc.in_features
+    model_ft.fc = nn.Linear(num_ftrs, len(classes_names))
+    model_ft.load_state_dict(torch.load(pth_path, map_location=device))
+    model_ft.to(device)
+    return model_ft
 
 def predict_samples(classes_names, pth_path, new_data_dir):
     np.random.seed(42)
     torch.seed()
     meta = {}
-
+    
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-    model_ft = torchvision.models.resnet18()
-    num_ftrs = model_ft.fc.in_features
-    model_ft.fc = nn.Linear(num_ftrs, len(classes_names))
-    print(device)
-    model_ft.load_state_dict(torch.load(pth_path, map_location=device))
-    model_ft.to(device)
-    
-    
-    print('Модель загружена')
-   
-    
-
+    model_ft = load_model(classes_names, pth_path, device)
     model_ft.eval()
     dataloader = get_dataloader_pred(new_data_dir)
     
