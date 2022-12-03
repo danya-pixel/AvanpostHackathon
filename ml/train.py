@@ -2,7 +2,7 @@ import time
 import copy 
 import torch
 
-def train_model_default(model, device, dataloaders, criterion, optimizer, scheduler, num_epochs=25):
+def train_model_default(model, device, dataloaders, criterion, optimizer, scheduler, num_epochs=10):
     since = time.time()
 
     best_model_wts = copy.deepcopy(model.state_dict())
@@ -58,7 +58,6 @@ def train_model_default(model, device, dataloaders, criterion, optimizer, schedu
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
 
-        print()
 
     time_elapsed = time.time() - since
     print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
@@ -66,7 +65,7 @@ def train_model_default(model, device, dataloaders, criterion, optimizer, schedu
 
     # load best model weights
     model.load_state_dict(best_model_wts)
-    torch.save(model.state_dict(), "model.pth")
+    torch.save(model.state_dict(), "model_fine.pth")
     return model
 
 

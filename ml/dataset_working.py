@@ -2,6 +2,7 @@ from typing import Dict
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 from sklearn.model_selection import train_test_split
+from pathlib import Path
 
 from PIL import Image
 import PIL
@@ -62,13 +63,28 @@ class ImageNetDatasetPred(Dataset):
         return img, img_path
         
 
+# def get_all_files(data_dir):
+#     data_paths = []
+#     data_labels = []
+#     for r, _, f in os.walk(data_dir):
+#         for name in f:
+#             data_paths.append(os.path.join(r, name))
+#             data_labels.append(r.split('/')[-2])
+#     return data_paths, data_labels
+
 def get_all_files(data_dir):
     data_paths = []
     data_labels = []
     for r, _, f in os.walk(data_dir):
-        for name in f:
-            data_paths.append(os.path.join(r, name))
-            data_labels.append(r.split('/')[1])
+            for name in f:
+                if '.gitkeep'==name:
+                    continue
+                name = Path(name)
+                r = Path(r)
+                filepath = r/name
+                label = filepath.parents[0].name
+                data_paths.append(filepath)
+                data_labels.append(label)
     return data_paths, data_labels
 
 def get_dataloader_pred(data_dir):
@@ -101,7 +117,7 @@ def get_dataloaders(data_dir, classes, new_data_dir, new_data_name):
     init_files, init_labels = get_all_files(data_dir=data_dir)
     init_labels = [classes[i] for i in init_labels]
     new_files, _ = get_all_files(data_dir=new_data_dir)
-    new_labels = classes[new_data_name] * len(new_files)
+    new_labels = classes[new_data_name]
 
     init_dataframe = pd.DataFrame({'x': init_files, 'y': init_labels})
     new_dataframe = pd.DataFrame({'x': new_files, 'y':new_labels})
@@ -122,16 +138,3 @@ def get_dataloaders(data_dir, classes, new_data_dir, new_data_name):
                 for x in ['train', 'val', 'test']}
     
     return dataloaders
-
-def predict_dataloader(new_data_paths):
-    normalize = transforms.Normalize(
-    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-)
-    input_transform = transforms.Compose([
-        transforms.Resize(256, PIL.Image.BICUBIC),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        normalize,
-    ])
-    dataset_list = pd.read_csv(new_data_paths)
-    dataset_pred = ImageNetDataset(data_dir, train_data, classes, transform = input_transform)
