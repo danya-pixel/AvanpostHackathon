@@ -78,6 +78,8 @@ def predict_samples(classes_names, pth_path, new_data_dir):
 
                     outputs = model_ft(inputs)
                     _, preds = torch.max(outputs, 1)
+                    # meta['probs'] = outputs.cpu().detach().numpy()
+                    print(outputs.detach().cpu())
                     for pred, file in zip(preds, path):
                         meta[file] = int(pred.detach().cpu())
     return meta

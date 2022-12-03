@@ -1,38 +1,16 @@
 import os
-import zipfile
 import shutil
 import json
-from requests import get
 from pathlib import Path
-from utils.utills import make_celery
-
-
-celery = make_celery()
-
-tmp_path = Path('tmp')
-if not tmp_path.exists():
-    os.mkdir(tmp_path)
-
-
-def download_file(url):
-    r = get(url)
-    if r.status_code != 200:
-        raise ValueError("Хуйня ваши модельки")
-    return r.content
-
-
-def prepare_files(task_folder, url, type='model'):
-    with open(task_folder/f"{type}.zip", "wb") as f:
-        f.write(download_file(url))
-    with zipfile.ZipFile(task_folder/f"{type}.zip", 'r') as zip_model:
-        zip_model.extractall(task_folder/type)
+from tasks.objects import celery, tmp_path
+from tasks.utils import prepare_files
 
 
 @celery.task(name="predict_by_model", bind=True)
 def predict_by_model(self, images_url, models_url):
     from ml.finetuner import predict_samples
     task_id = self.request.id
-    task_folder = tmp_path/task_id
+    task_folder = tmp_path / task_id
     if not task_folder.exists():
         os.mkdir(task_folder)
     prepare_files(task_folder, images_url, "images")
@@ -43,13 +21,12 @@ def predict_by_model(self, images_url, models_url):
     classes = model_config['classes']
     model_name = model_config['model_name']
     result = predict_samples(classes_names=classes,
-                    pth_path=str((task_folder / "model" / model_name).resolve()),
-                    new_data_dir=str((task_folder / "images").resolve())
-                    )
-    output_result = {}
-    for path, class_idx in result.items():
-        output_result[Path(path).name] = classes[class_idx]
+                             pth_path=str((task_folder / "model" / model_name).resolve()),
+                             new_data_dir=str((task_folder / "images").resolve())
+                             )
+    # output_result = {}
+    # for path, class_idx in result.items():
+    #     output_result[Path(path).name] = classes[class_idx]
 
     shutil.rmtree(task_folder)
-    return output_result
-
+    return result
