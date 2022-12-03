@@ -104,3 +104,6 @@ celerybeat.pid
 # Environments
 .env
 .venv
+ml/planes
+*.pth
+dataset
