@@ -38,7 +38,7 @@ def finetune_model(self, request, models_url):
 
     pth_model = result['pth_path']
     with open(pth_model, 'rb') as f:
-        files = {'file': f}
+        files = {'file': ('model.pth',f,'application/gzip')}
         headers = {
             "Authorization": f"Bearer {JWT_TOKEN}"
         }

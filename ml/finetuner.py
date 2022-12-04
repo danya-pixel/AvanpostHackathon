@@ -23,7 +23,7 @@ def finetune_model(data_dir, classes_names, pth_path, new_data_dir, new_data_nam
 
     classes_names.append(new_data_name)
     meta['classes'] = classes_names
-    meta['pth_path'] = (Path(pth_path).parent / (Path(pth_path).stem + '_fine.pth')).resolve()
+    meta['pth_path'] = str((Path(pth_path).parent / (Path(pth_path).stem + '_fine.pth')).resolve())
 
     classes = get_classes_dict(classes_names)
 
