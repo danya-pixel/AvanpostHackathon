@@ -2,15 +2,13 @@ import streamlit as st
 import pandas as pd
 from celery.result import AsyncResult
 from utils.upload_to_fds import upload
-from utils.utills import make_celery
 from tasks.predict import predict_by_model
+from tasks.objects import celery
 
-st.title("Prediction")
+st.title("Finetune")
 
-st.text("Здесь вы можете предсказать с помощью вашей модели")
+st.text("Здесь вы можете дообучить модель на еще один класс")
 
-
-celery = make_celery()
 
 def clear_state():
     if 'task_id' in st.session_state:
@@ -20,30 +18,30 @@ def clear_state():
     if 'async_result' in st.session_state:
         del st.session_state['async_result']
 
+
 st.button("Начать заново", on_click=clear_state)
 
+
 def form_upload():
-    with st.form("predict"):
+    with st.form("fine_tune"):
         model_archive = st.file_uploader("Archive with model (.zip)", type="zip")
-        images_archive = st.file_uploader("Archive with images (.zip)", type="zip")
-        submitted = st.form_submit_button("Predict")
+        class_name = st.text_input("New class name")
+        submitted = st.form_submit_button("train")
         if submitted:
-            if model_archive is None or images_archive is None:
+            if model_archive is None or class_name is None:
                 st.write("You shoud provide all files")
                 return
             clear_state()
             st.write("Супер! Отправляю в космос....")
-            images_url = upload(images_archive)
             model_url = upload(model_archive)
-            # images_url = "https://fds.es.nsu.ru/uploads/20a8e2e0-5eac-4acc-b880-85f5565e7805"
-            # model_url = "https://fds.es.nsu.ru/uploads/69d1abe5-8b04-45a5-8d59-32283ec9b101"
             st.write("Ваши файлы загружены")
             st.write(f"Model: {model_url}")
-            st.write(f"Images: {images_url}")
+            st.write(f"Class: {class_name}")
             task = predict_by_model.apply_async(args=(images_url, model_url))
             st.write(f"Task id: {task.task_id}")
             return task.task_id
-            
+
+
 if 'task_id' not in st.session_state:
     task_id = form_upload()
     if task_id is not None:
@@ -51,13 +49,16 @@ if 'task_id' not in st.session_state:
 else:
     task_id = st.session_state['task_id']
 
+
 def get_results():
     task_id = st.session_state['task_id']
     async_result = AsyncResult(id=task_id, app=celery)
     st.session_state['async_result'] = async_result
-    
+
+
 def rerun():
     st.session_state['async_result'].retry(countdown=2, max_retries=1)
+
 
 if task_id is not None:
     with st.container():
@@ -68,7 +69,8 @@ if task_id is not None:
             if res.status == "SUCCESS":
                 result = res.get()
                 st.text(f"Results:")
-                df = pd.DataFrame(result.items(), columns=["Имя файла", "Класс"]).sort_values(by="Имя файла").reset_index(drop=True)
+                df = pd.DataFrame(result.items(), columns=["Имя файла", "Класс"]).sort_values(
+                    by="Имя файла").reset_index(drop=True)
                 st.dataframe(df)
             elif res.status == "FAILURE":
                 st.button("Перезапустить", on_click=get_results)
