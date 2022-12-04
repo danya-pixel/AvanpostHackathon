@@ -85,7 +85,7 @@ if task_id is not None:
                 st.text(f"Results:")
                 df = pd.DataFrame(output.items(), columns=["Имя файла", "Класс"]).sort_values(
                     by="Имя файла").reset_index(drop=True)
-                df.to_csv("out.csv")
+                # df.to_csv("out.csv")
                 st.dataframe(df)
             elif res.status == "FAILURE":
                 st.button("Перезапустить", on_click=get_results)
