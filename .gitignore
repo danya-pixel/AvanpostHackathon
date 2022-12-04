@@ -108,3 +108,4 @@ ml/planes
 *.pth
 dataset
 .idea
+new_data
