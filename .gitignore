@@ -110,3 +110,6 @@ celerybeat.pid
 **.pth
 
 ml/planes
+dataset
+new_data
+planes
