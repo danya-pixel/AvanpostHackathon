@@ -32,4 +32,4 @@ def predict_by_model(self, images_url, models_url):
     #     output_result[Path(path).name] = classes[class_idx]
 
     shutil.rmtree(task_folder)
-    return result
+    return result, classes

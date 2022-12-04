@@ -31,10 +31,13 @@ def finetune_model(self, request, models_url):
                             new_data_dir=str((task_folder / "images").resolve()),
                             new_data_name=request
                             )
-    output_result = {}
-    for path, class_idx in result.items():
-        output_result[Path(path).name] = classes[class_idx]
+
+    pth_model = result['pth_path']
+
+    # output_result = {}
+    # for path, class_idx in result.items():
+    #     output_result[Path(path).name] = classes[class_idx]
 
     # shutil.rmtree(task_folder)
-    return output_result
+    return result, classes, pth_model
 

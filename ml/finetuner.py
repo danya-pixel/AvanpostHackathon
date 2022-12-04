@@ -70,16 +70,16 @@ def load_model_finetune(classes_names, pth_path, device):
 
 
 def predict_samples(classes_names, pth_path, new_data_dir):
-    best_thresholds = [0.3,
-                       0.3,
-                       0.3,
-                       0.3,
-                       0.3,
-                       0.3,
-                       0.3,
-                       0.3,
-                       0.3,
-                       0.3]
+    best_thresholds = [0.1745,
+                       0.2794,
+                       0.1232,
+                       0.2812,
+                       0.1567,
+                       0.1434,
+                       0.2475,
+                       0.2341,
+                       0.2341,
+                       0.3123]
     np.random.seed(42)
     torch.seed()
     meta = {}
