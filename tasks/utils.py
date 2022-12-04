@@ -1,4 +1,7 @@
+import os
+import shutil
 import zipfile
+from pathlib import Path
 
 from requests import get
 
@@ -15,3 +18,6 @@ def prepare_files(task_folder, url, type='model'):
         f.write(download_file(url))
     with zipfile.ZipFile(task_folder / f"{type}.zip", 'r') as zip_model:
         zip_model.extractall(task_folder / type)
+    for r, dirs in os.walk(task_folder / type):
+        if '__MACOSX' in dirs:
+            shutil.rmtree(Path(r) / '__MACOSX')
