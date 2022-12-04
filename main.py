@@ -1,7 +1,5 @@
 import streamlit as st
 
-from ml.finetuner import finetune_model
-from tasks.objects import DATASET_PATH
 
 st.title("ResNet 50 trainer")
 

@@ -74,10 +74,11 @@ if task_id is not None:
             res = st.session_state['async_result']
             st.text(f"Статус задачи {res.task_id}: {res.status}")
             if res.status == "SUCCESS":
-                result = res.get()
+                result, classes = res.get()
+                # print(result)
                 output = {}
-                classes = ["trucks", "minibus", "ski", "dump_trucks", "bicycles", "snowboard", "tractor", "trains",
-                           "gazon", "horses"]
+                # classes = ["trucks", "minibus", "ski", "dump_trucks", "bicycles", "snowboard", "tractor", "trains",
+                #            "gazon", "horses"]
                 for key, value in result.items():
                     output[Path(key).name] = classes[value]
 

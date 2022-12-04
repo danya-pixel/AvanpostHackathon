@@ -1,5 +1,8 @@
 import streamlit as st
 import pandas as pd
+import math
+from bokeh.plotting import figure
+import matplotlib.pyplot as plt
 from celery.result import AsyncResult
 from utils.upload_to_fds import upload
 from tasks import finetune_model, celery
@@ -67,11 +70,49 @@ if task_id is not None:
             res = st.session_state['async_result']
             st.text(f"Статус задачи {res.task_id}: {res.status}")
             if res.status == "SUCCESS":
-                result = res.get()
-                st.text(f"Results:")
-                df = pd.DataFrame(result.items(), columns=["Имя файла", "Класс"]).sort_values(
-                    by="Имя файла").reset_index(drop=True)
-                st.dataframe(df)
+                col1, col2 = st.columns(2)
+                result, classes, _ = res.get()
+                with col1:
+                    st.text("Классы модели:")
+                    for i in result['classes']:
+                        st.text(f"* {i}")
+
+                with col2:
+                    st.text("Метрики:")
+                    st.metric("F1", value=round(result['f1'], 4))
+                    st.metric("Accuracy", value=round(result['acc'], 4))
+                    st.text("Обучение:")
+                    x = range(len(result['epoch_loss']))
+                    loss = result['epoch_loss']
+                    acc = result['epoch_acc']
+                    fig = plt.figure(figsize=(5, 5))
+                    fig, axs = plt.subplots(nrows=1, ncols=2)
+                    axs[0].set_title("Accuracy")
+                    axs[0].set_xlabel("Epoch")
+                    axs[0].plot(x, acc)
+                    axs[1].set_xlabel("Epoch")
+                    axs[1].set_title("Loss")
+                    axs[1].plot(x, loss)
+                    st.pyplot(fig)
+
+                # st.text("Loss: ")
+                # loss_graph = figure(
+                #     title='simple line example',
+                #     x_axis_label='epoch',
+                #     y_axis_label='Loss')
+                # loss_graph.line(x, loss, legend_label='Loss', line_width=2, color="red")
+                # # p.line(x, acc, legend_label='Accuracy', line_width=2, color="green")
+                # # df = pd.DataFrame(result.items(), columns=["Имя файла", "Класс"]).sort_values(
+                # #     by="Имя файла").reset_index(drop=True)
+                # # st.dataframe(df)
+                # # st.bokeh_chart(p, use_container_width=True)
+                # st.text("Accuracy: ")
+                # acc_graph = figure(
+                #     title='simple line example',
+                #     x_axis_label='epoch',
+                #     y_axis_label='Loss')
+                # acc_graph.line(x, acc, legend_label='Accuracy', line_width=2, color="green")
+                # st.bokeh_chart(loss_graph | acc_graph, use_container_width=True)
             elif res.status == "FAILURE":
                 st.button("Перезапустить", on_click=get_results)
                 st.error(f"Error: {res.get()}")
