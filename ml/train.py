@@ -4,21 +4,24 @@ import torch
 import numpy as np
 import torchvision
 from pathlib import Path
-from test import test_model
-from dataset_working import get_dataloaders_train
+
+from tqdm import tqdm
+
+from ml.test import test_model
+from ml.dataset_working import get_dataloaders_train
 from torchvision.models import resnet50, ResNet50_Weights
 
 
 def train_model(
-    meta,
-    model,
-    device,
-    dataloaders,
-    criterion,
-    optimizer,
-    scheduler,
-    num_epochs=10,
-    model_path="model.pth",
+        meta,
+        model,
+        device,
+        dataloaders,
+        criterion,
+        optimizer,
+        scheduler,
+        num_epochs=10,
+        model_path="model.pth",
 ):
     since = time.time()
 
@@ -85,15 +88,15 @@ def train_model(
 
 
 def train_model_tune(
-    meta,
-    model,
-    device,
-    dataloaders,
-    criterion,
-    optimizer,
-    scheduler,
-    num_epochs=10,
-    model_path="model.pth",
+        meta,
+        model,
+        device,
+        dataloaders,
+        criterion,
+        optimizer,
+        scheduler,
+        num_epochs=10,
+        model_path="model.pth",
 ):
     since = time.time()
 
@@ -116,7 +119,7 @@ def train_model_tune(
             running_corrects = 0
 
             # Iterate over data.
-            for inputs, labels in dataloaders[phase]:
+            for inputs, labels in tqdm(dataloaders[phase]):
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -128,20 +131,12 @@ def train_model_tune(
                 with torch.set_grad_enabled(phase == "train"):
                     outputs = model(inputs)
                     _, preds = torch.max(softmax(outputs), 1)
-                    # new_indices = labels == len(meta["classes"])
-                    # old_indices = labels != len(meta["classes"])
-                    # print("NEW", new_indices)
-                    # print("OLD", old_indices)
-                    # print("SHAPE", outputs.shape)
-                    # break
                     loss = criterion(outputs, labels)
 
-                    # backward + optimize only if in training phase
                     if phase == "train":
                         loss.backward()
                         optimizer.step()
 
-                # statistics
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
             if phase == "train":
@@ -202,7 +197,7 @@ if __name__ == "__main__":
 
     meta["classes"] = classes
     meta["pth_path"] = (
-        Path(pth_path).parent / (Path(pth_path).stem + "50.pth")
+            Path(pth_path).parent / (Path(pth_path).stem + "50.pth")
     ).resolve()
 
     dataloaders = get_dataloaders_train(data_dir, classes)

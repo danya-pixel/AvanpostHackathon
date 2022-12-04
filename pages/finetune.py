@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 from celery.result import AsyncResult
 from utils.upload_to_fds import upload
-from tasks.predict import predict_by_model
-from tasks.objects import celery
+from tasks import finetune_model, celery
 
 st.title("Finetune")
 
@@ -34,10 +33,11 @@ def form_upload():
             clear_state()
             st.write("Супер! Отправляю в космос....")
             model_url = upload(model_archive)
+            # model_url = 'https://fds.es.nsu.ru/uploads/888fdd38-1659-4577-b4ba-ddafc0cedae9'
             st.write("Ваши файлы загружены")
             st.write(f"Model: {model_url}")
             st.write(f"Class: {class_name}")
-            task = predict_by_model.apply_async(args=(images_url, model_url))
+            task = finetune_model.apply_async(args=(class_name, model_url))
             st.write(f"Task id: {task.task_id}")
             return task.task_id
 

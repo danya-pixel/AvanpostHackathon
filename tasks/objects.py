@@ -9,4 +9,4 @@ tmp_path = Path('tmp')
 if not tmp_path.exists():
     os.mkdir(tmp_path)
 
-DATASET_PATH = 'dataset'
+DATASET_PATH = '/Users/k.nosorev/projects/NSU/hackathon/AvanpostHackathon/dataset'

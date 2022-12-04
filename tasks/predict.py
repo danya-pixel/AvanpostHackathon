@@ -2,10 +2,10 @@ import os
 import shutil
 import json
 from pathlib import Path
+import asyncio
 
 from tasks.objects import celery, tmp_path
 from tasks.utils import prepare_files
-
 
 
 @celery.task(name="predict_by_model", bind=True)
@@ -22,6 +22,7 @@ def predict_by_model(self, images_url, models_url):
         model_config = json.load(f)
     classes = model_config['classes']
     model_name = model_config['model_name']
+
     result = predict_samples(classes_names=classes,
                              pth_path=str((task_folder / "model" / model_name).resolve()),
                              new_data_dir=str((task_folder / "images").resolve())

@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 from sklearn.model_selection import train_test_split
 from pathlib import Path
 from PIL import Image
-from preprocessing import get_train_transforms, get_test_transforms
+from ml.preprocessing import get_train_transforms, get_test_transforms
 import PIL
 import numpy as np
 import torch
@@ -82,7 +82,7 @@ def get_all_files(data_dir):
 
 
 def get_dataloader_pred(data_dir):
-    NUM_WORKERS = 1
+    NUM_WORKERS = 0
     new_files, _ = get_all_files(data_dir=data_dir)
     new_lables = 0 * len(new_files)
     init_dataframe = pd.DataFrame({'x': new_files, 'y': new_lables})
@@ -144,7 +144,7 @@ def get_dataloaders_train(data_dir, classes):
                       'test': dataset_test}  # тут надо вставить датасеты
 
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=64,
-                                                  shuffle=True, num_workers=32)
+                                                  shuffle=True, num_workers=0)
                    for x in ['train', 'val', 'test']}
 
     return dataloaders

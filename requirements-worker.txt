@@ -29,10 +29,6 @@ mypy-extensions==0.4.3
 nest-asyncio==1.5.6
 networkx==2.8.8
 numpy==1.23.5
-nvidia-cublas-cu11==11.10.3.66
-nvidia-cuda-nvrtc-cu11==11.7.99
-nvidia-cuda-runtime-cu11==11.7.99
-nvidia-cudnn-cu11==8.5.0.96
 opencv-python==4.6.0.66
 packaging==21.3
 pandas==1.5.2
@@ -71,3 +67,6 @@ traitlets==5.6.0
 typing_extensions==4.4.0
 urllib3==1.26.13
 wcwidth==0.2.5
+fake_headers
+requests
+bs4

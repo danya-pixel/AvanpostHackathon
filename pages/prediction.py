@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import streamlit as st
 import pandas as pd
 from celery.result import AsyncResult
@@ -9,8 +11,8 @@ st.title("Prediction")
 
 st.text("Здесь вы можете предсказать с помощью вашей модели")
 
-
 celery = make_celery()
+
 
 def clear_state():
     if 'task_id' in st.session_state:
@@ -20,7 +22,9 @@ def clear_state():
     if 'async_result' in st.session_state:
         del st.session_state['async_result']
 
+
 st.button("Начать заново", on_click=clear_state)
+
 
 def form_upload():
     with st.form("predict"):
@@ -43,7 +47,8 @@ def form_upload():
             task = predict_by_model.apply_async(args=(images_url, model_url))
             st.write(f"Task id: {task.task_id}")
             return task.task_id
-            
+
+
 if 'task_id' not in st.session_state:
     task_id = form_upload()
     if task_id is not None:
@@ -51,13 +56,16 @@ if 'task_id' not in st.session_state:
 else:
     task_id = st.session_state['task_id']
 
+
 def get_results():
     task_id = st.session_state['task_id']
     async_result = AsyncResult(id=task_id, app=celery)
     st.session_state['async_result'] = async_result
-    
+
+
 def rerun():
     st.session_state['async_result'].retry(countdown=2, max_retries=1)
+
 
 if task_id is not None:
     with st.container():
@@ -67,8 +75,16 @@ if task_id is not None:
             st.text(f"Статус задачи {res.task_id}: {res.status}")
             if res.status == "SUCCESS":
                 result = res.get()
+                output = {}
+                classes = ["trucks", "minibus", "ski", "dump_trucks", "bicycles", "snowboard", "tractor", "trains",
+                           "gazon", "horses"]
+                for key, value in result.items():
+                    output[Path(key).name] = classes[value]
+
                 st.text(f"Results:")
-                df = pd.DataFrame(result.items(), columns=["Имя файла", "Класс"]).sort_values(by="Имя файла").reset_index(drop=True)
+                df = pd.DataFrame(output.items(), columns=["Имя файла", "Класс"]).sort_values(
+                    by="Имя файла").reset_index(drop=True)
+                df.to_csv("out.csv")
                 st.dataframe(df)
             elif res.status == "FAILURE":
                 st.button("Перезапустить", on_click=get_results)

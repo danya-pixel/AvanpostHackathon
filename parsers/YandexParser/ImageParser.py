@@ -1,13 +1,18 @@
 import asyncio
+import io
+import os
 from concurrent import futures
 import time
 import uuid
+from pathlib import Path
 
 import aiofiles as aiofiles
 import aiohttp as aiohttp
 import requests
 import json
 import urllib
+
+from PIL import Image
 from fake_headers import Headers
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -127,7 +132,7 @@ class YandexImage:
         )
         sbmt_btn.click()
 
-    async def search(self, pagenumber, text, queue: asyncio.Queue, sizes: Size = 'large') -> int:
+    async def search(self, pagenumber, text, queue: asyncio.Queue, sizes: Size = 'medium') -> int:
         captcha = True
         while captcha:
             params = {"text": text,
@@ -210,7 +215,7 @@ class YandexImage:
                     )
                 )
                 end.click()
-                await asyncio.sleep(5)
+                await asyncio.sleep(10)
                 if find:
                     find = True
                     break
@@ -269,18 +274,29 @@ async def get_hrefs(text, queue):
     await asyncio.sleep(1)
 
 
-async def download_image(queue: asyncio.Queue):
+async def download_image(queue: asyncio.Queue, path_to_save: Path):
     while True:
         url = await queue.get()
         try:
             async with aiohttp.ClientSession(read_timeout=2) as session:
                 async with session.get(url) as response:
                     if response.status == 200:
-                        f = await aiofiles.open('train/' + str(uuid.uuid4()) + ".jpg", mode='wb')
+                        file_path = path_to_save / (str(uuid.uuid4()) + ".jpg")
                         payload = await response.read()
-                        await f.write(payload)
-                        await f.close()
-            print(url, "Ready", queue.qsize())
+                        flag = True
+                        try:
+                            Image.open(io.BytesIO(payload)).convert('RGB')
+                        except Exception as e:
+                            print(f'{url} -ignore')
+                            flag = False
+
+                        if flag:
+                            with open(file_path, 'wb') as f:
+                                f.write(payload)
+
+
+            if flag:
+                print(f"{url} - Ready - {queue.qsize()}")
         except AttributeError as e:
             pass
             # print(e)
@@ -292,13 +308,13 @@ async def download_image(queue: asyncio.Queue):
             queue.task_done()
 
 
-async def main(request):
+async def main(request, path_to_save: Path):
     start = time.time()
     queue = asyncio.Queue()
-    hrefs = asyncio.create_task(get_hrefs(request,queue))
+    hrefs = asyncio.create_task(get_hrefs(request, queue))
     tasks = []
     for _ in range(5):
-        task = asyncio.create_task(download_image(queue))
+        task = asyncio.create_task(download_image(queue, path_to_save))
         tasks.append(task)
     total = await asyncio.gather(hrefs, return_exceptions=True)
     print(total)
@@ -307,10 +323,11 @@ async def main(request):
         task.cancel()
     await asyncio.gather(*tasks, return_exceptions=True)
     print(time.time() - start)
+    return time.time() - start
 
 
 if __name__ == '__main__':
-    asyncio.run(main("asdasd"))
+    asyncio.run(main("asdasd", Path('tmp')))
     # images = []
     # parser = YandexImage()
     # for i in range(40):
