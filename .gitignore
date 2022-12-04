@@ -104,8 +104,9 @@ celerybeat.pid
 # Environments
 .env
 .venv
+
+*.idea
+**.zip
+**.pth
+
 ml/planes
-*.pth
-dataset
-.idea
-new_data

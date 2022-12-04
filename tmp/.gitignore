@@ -1,6 +1,13 @@
 **.jpg
 **.png
 **.gif
+
+
+**.json
+**.pth
+*MAC*
+
 **.zip
 *
 !.gitignore
+

@@ -2,8 +2,10 @@ import os
 import shutil
 import json
 from pathlib import Path
+
 from tasks.objects import celery, tmp_path
 from tasks.utils import prepare_files
+
 
 
 @celery.task(name="predict_by_model", bind=True)
