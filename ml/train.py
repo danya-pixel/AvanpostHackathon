@@ -121,6 +121,7 @@ def train_model_tune(
             # Iterate over data.
             for inputs, labels in tqdm(dataloaders[phase]):
                 inputs = inputs.to(device)
+                labels = labels.type(torch.LongTensor)
                 labels = labels.to(device)
 
                 # zero the parameter gradients

@@ -27,7 +27,7 @@ def finetune_model(data_dir, classes_names, pth_path, new_data_dir, new_data_nam
 
     classes = get_classes_dict(classes_names)
 
-    dataloaders = dataloaders = get_dataloaders(data_dir, classes, new_data_dir, new_data_name)
+    dataloaders = get_dataloaders(data_dir, classes, new_data_dir, new_data_name)
 
     criterion = torch.nn.CrossEntropyLoss()
 

@@ -95,6 +95,7 @@ def get_dataloader_pred(data_dir):
 
 def get_dataloaders(data_dir, classes, new_data_dir, new_data_name):
     init_files, init_labels = get_all_files(data_dir=data_dir)
+
     init_labels = [classes[i] for i in init_labels]
     new_files, _ = get_all_files(data_dir=new_data_dir)
     new_labels = classes[new_data_name]

@@ -70,3 +70,8 @@ wcwidth==0.2.5
 fake_headers
 requests
 bs4
+aiofiles
+aiohttp
+selenium
+2captcha-python
+celery
