@@ -94,7 +94,7 @@ if task_id is not None:
                     axs[1].set_title("Loss")
                     axs[1].plot(x, loss)
                     st.pyplot(fig)
-
+                st.text(f"Скачать модель: {result['pth_url']}")
                 # st.text("Loss: ")
                 # loss_graph = figure(
                 #     title='simple line example',
