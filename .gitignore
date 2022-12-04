@@ -104,3 +104,6 @@ celerybeat.pid
 # Environments
 .env
 .venv
+*.idea
+**.zip
+**.pth

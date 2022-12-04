@@ -21,16 +21,16 @@ def download_file(url):
 
 
 def prepare_files(task_folder, url, type='model'):
-    with open(task_folder/f"{type}.zip", "wb") as f:
+    with open(task_folder / f"{type}.zip", "wb") as f:
         f.write(download_file(url))
-    with zipfile.ZipFile(task_folder/f"{type}.zip", 'r') as zip_model:
-        zip_model.extractall(task_folder/type)
+    with zipfile.ZipFile(task_folder / f"{type}.zip", 'r') as zip_model:
+        zip_model.extractall(task_folder / type)
 
 
 @celery.task(name="predict_by_model", bind=True)
 def predict_by_model(self, images_url, models_url):
     task_id = self.request.id
-    task_folder = tmp_path/task_id
+    task_folder = tmp_path / task_id
     if not task_folder.exists():
         os.mkdir(task_folder)
     prepare_files(task_folder, images_url, "images")
