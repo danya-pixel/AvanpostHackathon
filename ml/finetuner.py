@@ -3,9 +3,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from ml.dataset_working import get_dataloaders, get_dataloader_pred
-from ml.test import test_model
-from ml.train import train_model_default
+from dataset_working import get_dataloaders, get_dataloader_pred
+from test import test_model
+from train import train_model_default
 
 
 def get_classes_dict(classes_names):
@@ -34,7 +34,7 @@ def finetune_model(data_dir, classes_names, pth_path, new_data_dir, new_data_nam
     for name, param in model_ft.named_parameters():
         if not 'fc' in name:
             param.requires_grad = False
-    model_ft = train_model_default(meta, model_ft, device, dataloaders, criterion, optimizer_ft, exp_lr_scheduler, num_epochs= 10, model_path=meta['pth_path'])
+    model_ft = train_model_default(meta, model_ft, device, dataloaders, criterion, optimizer_ft, exp_lr_scheduler, num_epochs= 20, model_path=meta['pth_path'])
     acc, f1 = test_model(model_ft, dataloaders['test'], device)
     meta['acc'], meta['f1'] = float(acc), float(f1)
     return meta
@@ -66,7 +66,7 @@ def predict_samples(classes_names, pth_path, new_data_dir):
     np.random.seed(42)
     torch.seed()
     meta = {}
-    
+    softmax = torch.nn.Softmax(dim=1)
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     model_ft = load_model(classes_names, pth_path, device)
     model_ft.eval()
@@ -75,11 +75,8 @@ def predict_samples(classes_names, pth_path, new_data_dir):
     with torch.no_grad():
         for i, (inputs, path) in enumerate(dataloader):
                     inputs = inputs.to(device)
-
                     outputs = model_ft(inputs)
-                    _, preds = torch.max(outputs, 1)
-                    # meta['probs'] = outputs.cpu().detach().numpy()
-                    print(outputs.detach().cpu())
+                    _, preds = torch.max(softmax(outputs), 1)
                     for pred, file in zip(preds, path):
                         meta[file] = int(pred.detach().cpu())
     return meta

@@ -7,6 +7,7 @@ def train_model_default(meta, model, device, dataloaders, criterion, optimizer, 
 
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
+    softmax = torch.nn.Softmax(dim=1)
     meta['epoch_loss'] = []
     meta['epoch_acc'] = []
     for epoch in range(num_epochs):
@@ -34,6 +35,7 @@ def train_model_default(meta, model, device, dataloaders, criterion, optimizer, 
                 # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model(inputs)
+                    st_out = softmax(outputs)
                     _, preds = torch.max(outputs, 1)
                     loss = criterion(outputs, labels)
 
@@ -60,6 +62,7 @@ def train_model_default(meta, model, device, dataloaders, criterion, optimizer, 
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
+                torch.save(model.state_dict(), model_path)
 
 
     time_elapsed = time.time() - since

@@ -4,20 +4,18 @@ from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 from sklearn.model_selection import train_test_split
 from pathlib import Path
-
 from PIL import Image
+from preprocessing import get_train_transforms, get_test_transforms
 import PIL
+import numpy as np
 import torch
 import os
-import glob
 SEED = 42
 
 torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = True
-
-#from preproccesing import get_test_transforms, get_train_transforms
 
 
 class ImageNetDataset(Dataset):
@@ -35,13 +33,14 @@ class ImageNetDataset(Dataset):
     def __getitem__(self, index):
         img_path = self.files[index]
         img = Image.open(img_path).convert('RGB')
+        img = np.array(img)
 
         if self.transform is not None:
-            img = self.transform(img)
+            img = self.transform(image=img)
 
         #label = self.labels_set[self.all_files_sep[index][-2]]
         label = self.labels[index]
-        return img, label
+        return img['image'], label
 
 
 class ImageNetDatasetPred(Dataset):
@@ -58,10 +57,10 @@ class ImageNetDatasetPred(Dataset):
     def __getitem__(self, index):
         img_path = self.files[index]
         img = Image.open(img_path).convert('RGB')
-
+        img = np.array(img)
         if self.transform is not None:
-            img = self.transform(img)
-        return img, img_path
+            img = self.transform(image=img)
+        return img['image'], img_path
 
 def get_all_files(data_dir):
     data_paths = []
@@ -79,36 +78,20 @@ def get_all_files(data_dir):
     return data_paths, data_labels
 
 
+
 def get_dataloader_pred(data_dir):
-    normalize = transforms.Normalize(
-        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-    )
-    input_transform = transforms.Compose([
-        transforms.Resize(256, PIL.Image.BICUBIC),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        normalize,
-    ])
+    NUM_WORKERS = 1
     new_files, _ = get_all_files(data_dir=data_dir)
     new_lables = 0 * len(new_files)
     init_dataframe = pd.DataFrame({'x': new_files, 'y': new_lables})
     dataset_pred = ImageNetDatasetPred(
-        init_dataframe, transform=input_transform)
+        init_dataframe, transform=get_test_transforms())
     dataloader_pred = torch.utils.data.DataLoader(
-        dataset_pred, batch_size=64, shuffle=True, num_workers=0)
+        dataset_pred, batch_size=64, shuffle=True, num_workers=NUM_WORKERS)
     return dataloader_pred
 
 
 def get_dataloaders(data_dir, classes, new_data_dir, new_data_name):
-    normalize = transforms.Normalize(
-        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-    )
-    input_transform = transforms.Compose([
-        transforms.Resize(256, PIL.Image.BICUBIC),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        normalize,
-    ])
     init_files, init_labels = get_all_files(data_dir=data_dir)
     init_labels = [classes[i] for i in init_labels]
     new_files, _ = get_all_files(data_dir=new_data_dir)
@@ -124,10 +107,10 @@ def get_dataloaders(data_dir, classes, new_data_dir, new_data_name):
         val_test_data, test_size=0.5, shuffle=True)
 
     dataset_train = ImageNetDataset(
-        train_data, classes, transform=input_transform)
-    dataset_val = ImageNetDataset(val_data, classes, transform=input_transform)
+        train_data, classes, transform=get_train_transforms())
+    dataset_val = ImageNetDataset(val_data, classes, transform=get_train_transforms())
     dataset_test = ImageNetDataset(
-        test_data, classes, transform=input_transform)
+        test_data, classes, transform=get_test_transforms())
 
     image_datasets = {'train': dataset_train, 'val': dataset_val,
                       'test': dataset_test}  # тут надо вставить датасеты
