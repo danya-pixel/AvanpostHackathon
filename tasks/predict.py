@@ -1,8 +1,6 @@
 import os
 import shutil
 import json
-from pathlib import Path
-import asyncio
 
 from tasks.objects import celery, tmp_path
 from tasks.utils import prepare_files

@@ -3,10 +3,14 @@ import json
 import os
 import shutil
 from pathlib import Path
+
+from requests import post
+
 from parsers.YandexParser.ImageParser import main
 from ml.finetuner import finetune_model
 from tasks.objects import tmp_path, celery, DATASET_PATH
 from tasks.utils import prepare_files
+from utils.upload_to_fds import JWT_TOKEN
 
 
 @celery.task(name="train_model", bind=True)
@@ -33,11 +37,18 @@ def finetune_model(self, request, models_url):
                             )
 
     pth_model = result['pth_path']
-
+    with open(pth_model, 'rb') as f:
+        files = {'file': f}
+        headers = {
+            "Authorization": f"Bearer {JWT_TOKEN}"
+        }
+        r = post("https://fds.es.nsu.ru/upload/", files=files, headers=headers)
+        if r.status_code != 200:
+            raise ValueError("Upload error")
+        result['pth_url'] = "https://fds.es.nsu.ru/uploads/" + r.json()['file_id']
     # output_result = {}
     # for path, class_idx in result.items():
     #     output_result[Path(path).name] = classes[class_idx]
 
     # shutil.rmtree(task_folder)
     return result, classes, pth_model
-
