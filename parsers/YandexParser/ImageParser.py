@@ -66,7 +66,7 @@ class YandexImage:
         prefs = {"profile.managed_default_content_settings.images": 2}
         chrome_options.add_experimental_option("prefs", prefs)
         self.size = Size()
-        self.driver = webdriver.Chrome("chromedriver", chrome_options=chrome_options)
+        self.driver = webdriver.Remote("192.168.1.200:49283", options=chrome_options)
         self.headers = Headers(headers=True).generate()
         self.version = '1.0-release'
         self.about = 'Yandex Images Parser'
