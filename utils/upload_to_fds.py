@@ -1,8 +1,10 @@
+import os
+
 from requests import post
 
 # TODO: move it to os.env
-JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDE1NjE2NDgsInVzZXJfaWQiOjk4OTg5ODk4OTg5fQ.9Zxsjmyv2KvakIVPlkXLjD8OMt0hRqbXtqjnFohFPY8"
-
+JWT_TOKEN = os.environ.get("FDS_JWT_TOKEN", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDE1NjE2NDgsInVzZXJfaWQiOjk4OTg5ODk4OTg5fQ.9Zxsjmyv2KvakIVPlkXLjD8OMt0hRqbXtqjnFohFPY8"
+)
 
 def upload(file):
     files = {'file': (str(file.name), file.getvalue(), 'application/zip')}
